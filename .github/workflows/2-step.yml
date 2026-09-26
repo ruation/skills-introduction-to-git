@@ -111,22 +111,22 @@ jobs:
         uses: actions/github-script@v6
         env:
           commit_messages: ${{ toJson(github.event.client_payload.branch_commit_messages) }}
-          keyword: "developer"
+          keywords: '["developer","develepor"]'
         with:
           script: |
             // Load commit messages and keyword
             const commitMessages = JSON.parse(process.env.commit_messages || "[]");
-            let keyword = process.env.keyword || "";
-            keyword = keyword.toLowerCase();
+            const keywords = JSON.parse(process.env.keywords || "[]")
+              .map((keyword) => keyword.toLowerCase());
 
             // Check commit messages for keyword
             for (const commit of commitMessages) {
               const message = commit.message.toLowerCase();
-              if (message.includes(keyword)) {
+              if (keywords.some((keyword) => message.includes(keyword))) {
                 return;
               }
             }
-            throw new Error(`No commit message contains the keyword '${keyword}'`);
+            throw new Error(`No commit message contains any of these keywords: ${keywords.join(", ")}`);
 
       - name: Update comment - step results
         uses: GrantBirki/comment@v2.1.1
@@ -144,7 +144,7 @@ jobs:
               - description: "Created game docs commit"
                 passed: ${{ steps.check-for-game-docs-commit.outcome == 'success' }}
               - description: "Created developer docs commit"
-                passed: ${{ steps.check-for-game-docs-commit.outcome == 'success' }}
+                passed: ${{ steps.check-for-developer-docs-commit.outcome == 'success' }}
 
       # END: Check practical exercise
 
